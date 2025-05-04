@@ -100,7 +100,7 @@ async def ask_llama_upload(video: UploadFile = File(...)):
     file_id = str(uuid.uuid4())
     file_ext = Path(original_filename).suffix or '.webm'
     save_filename = f"{file_id}{file_ext}"
-    file_location = UPLOAD_DIR / save_filename
+    file_location = f"{UPLOAD_DIR}/{save_filename}"
 
     try:
         print(f"Receiving file: {original_filename}, Content-Type: {video.content_type}")
@@ -180,4 +180,4 @@ async def stream_results(
         return StreamingResponse(error_stream_gen(), media_type="text/event-stream", status_code=500)
 
 if __name__ == "__main__":
-    uvicorn.run("main:app", host="0.0.0.0", port=5000, reload=True)
+    uvicorn.run("main:app", host="0.0.0.0", port=1234, reload=True)

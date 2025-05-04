@@ -15,7 +15,7 @@ const ReviewPage = () => {
       const formData = new FormData();
       formData.append('video', videoBlob, 'recorded-video.webm');
 
-      const uploadResponse = await fetch('http://0.0.0.0:5000/ask_llama', {
+      const uploadResponse = await fetch('http://0.0.0.0:1234/ask_llama', {
         method: 'POST',
         body: formData,
       });

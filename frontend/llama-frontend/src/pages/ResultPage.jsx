@@ -1,9 +1,9 @@
 import React, { useEffect, useState } from 'react';
-import { useLocation, useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate, useParams } from 'react-router-dom';
 import { Spinner, Button } from 'react-bootstrap';
 
 const ResultPage = () => {
-const { streamUrl } = useParams();
+const { streamId } = useParams();
 
   const navigate = useNavigate();
 
@@ -11,7 +11,9 @@ const { streamUrl } = useParams();
   const [isDone, setIsDone] = useState(false);
 
   useEffect(() => {
-    if (!streamUrl) return;
+    if (!streamId) return;
+
+    const streamUrl = `http://0.0.0.0:1234/stream/${streamId}`;
 
     const eventSource = new EventSource(streamUrl);
 
@@ -37,9 +39,9 @@ const { streamUrl } = useParams();
     return () => {
       eventSource.close();
     };
-  }, [streamUrl]);
+  }, [streamId]);
 
-  if (!streamUrl) {
+  if (!streamId) {
     return (
       <div style={{ padding: '2rem' }}>
         <h2>No stream URL provided</h2>

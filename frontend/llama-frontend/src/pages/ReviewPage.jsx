@@ -15,7 +15,7 @@ const ReviewPage = () => {
       const formData = new FormData();
       formData.append('video', videoBlob, 'recorded-video.webm');
 
-      const uploadResponse = await fetch('http://0.0.0.0:5000/ask_llama', {
+      const uploadResponse = await fetch('http://0.0.0.0:1234/ask_llama', {
         method: 'POST',
         body: formData,
       });
@@ -26,11 +26,13 @@ const ReviewPage = () => {
 
       setShowModal(true);
 
-      const stream_url = await uploadResponse.json();
+      const data = await uploadResponse.json();
+      const streamUrl = data.stream_url; // e.g., "/stream/a1b2c3d4-e5f6-7890-1234-567890abcdef"
+      const streamId = streamUrl.split('/').pop();
 
       setStatusMessage("Waiting for analysis to begin...");
 
-      navigate(`/result/${stream_url}`);
+      navigate(`/result/${streamId}`);
 
     } catch (err) {
       console.error(err);
