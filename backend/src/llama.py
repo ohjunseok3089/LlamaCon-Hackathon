@@ -5,7 +5,7 @@ import requests
 import json # Import json
 from fastapi.responses import StreamingResponse # Import StreamingResponse
 from utils.prompts.llama_prompt import SYSTEM_PROMPT
-from utils.configs.llama_endpoints import BASE_URL, LLAMA_API_KEY
+from utils.configs.api_endpoints import BASE_URL, LLAMA_API_KEY
 
 class LlamaProcessor:
     def __init__(self):

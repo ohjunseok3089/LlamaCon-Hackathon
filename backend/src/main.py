@@ -86,6 +86,10 @@ def process_video_file(video_path: Path, frame_interval: int = 10) -> List[str]:
 async def root():
     return {"message": "Llama API is running. Send POST requests to /ask_llama"}
 
+class UploadResponse(BaseModel):
+    stream_url: str
+    filename: str
+
 @app.post("/ask_llama", response_model=UploadResponse)
 async def ask_llama_upload(video: UploadFile = File(...)):
     """
