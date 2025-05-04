@@ -35,10 +35,23 @@ def main():
         # Process the input and print the response
         try:
             print("\nProcessing your request...")
-            response = llama_processor.process_text(user_input)
+            response = llama_processor.process_text_stream(user_input)
+            full_response = ""
             print("\nResponse:")
-            print("-" * 50)
-            print(response)
+            for chunk in response.iter_lines():
+                if chunk:
+                    try:
+                        decoded_chunk = chunk.decode("utf-8")[6:]
+                        data = json.loads(decoded_chunk)
+                        if "event" in data:
+                            if data["event"]["event_type"] == "progress":
+                                token = data["event"]["delta"]["text"]
+                                full_response += token
+                                print(token, end="", flush=True)
+                            elif data["event"]["event_type"] == "complete":
+                                break
+                    except json.JSONDecodeError as e:
+                        print("JSONDecodeError", e)
             print("-" * 50)
         except Exception as e:
             print(f"An error occurred: {e}")

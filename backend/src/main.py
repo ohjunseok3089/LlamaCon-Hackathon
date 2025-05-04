@@ -6,6 +6,8 @@ from pydantic import BaseModel
 from typing import List, Optional
 import uvicorn
 from llama import LlamaProcessor
+import traceback
+import json
 
 # Create FastAPI app
 app = FastAPI(title="Image Receiver API")
@@ -23,67 +25,58 @@ llama_processor = LlamaProcessor()
 
 # Define models for request validation
 class ImageData(BaseModel):
-    images: List[str]  # Base64 encoded images
-    metadata: Optional[dict] = None
+    images: List[str]  # Base64 encoded image strings
+    user_prompt: Optional[str] = None # Include prompt in the body
+
+def video_extract(video_file):
+    """Extract video file into frames and audio"""
+    # TODO: Implement video extraction; Video -> image frames and audio
+    # TODO: Audio -> Speech to Text
+
+
+    pass
 
 @app.get("/")
 async def root():
-    return {"message": "Image Receiver API is running. Send POST requests to /ask_llama"}
+    return {"message": "Llama API is running. Send POST requests to /ask_llama"}
 
+# Updated endpoint to accept prompt in body and return stream
 @app.post("/ask_llama")
-async def ask_llama(image_data: ImageData, user_prompt: str):
+async def ask_llama(image_data: ImageData): # Get images and prompt from body
     try:
-        # Process received images
-        num_images = len(image_data.images)
-
-        # Llama Processing
-        response_message = llama_processing(image_data.images, user_prompt)
-        
-        return JSONResponse(
-            content={
-                "success": True,
-                "message": f"Successfully received {num_images} images",
-                "count": num_images,
-                "metadata": image_data.metadata,
-                "response": response_message
-            },
-            status_code=200
+        # Return type: StreamingResponse
+        return llama_processor.process_images_stream(
+            image_data.images,
+            image_data.user_prompt
         )
     except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+        print(f"!!! Error in /ask_llama endpoint: {e}")
+        traceback.print_exc()
+        async def error_stream_gen():
+             error_payload = json.dumps({"error": "Failed to start stream", "detail": str(e)})
+             yield f"data: {error_payload}\n\n"
+        return StreamingResponse(error_stream_gen(), media_type="text/event-stream", status_code=500)
 
 # For handling raw JSON if needed
 @app.post("/upload_raw")
 async def upload_raw(request: Request):
-    try:
-        data = await request.json()
-        images = data.get("images", [])
-        num_images = len(images)
+    # Under Construction
+    
+    # try:
+    #     data = await request.json()
+    #     images = data.get("images", [])
+    #     num_images = len(images)
         
-        return JSONResponse(
-            content={
-                "success": True,
-                "message": f"Successfully received {num_images} images via raw JSON",
-                "count": num_images
-            },
-            status_code=200
-        )
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
-
-def llama_processing(images, user_prompt):
-    is_success = False
-    response_message = "Failed to process images"
-    system_prompt = ""
-
-    response_message = llama_processor.process_images(images, user_prompt)
-
-    response_json = {
-        "success": is_success,
-        "message": response_message,
-        "count": 0
-    }
-    return response_message
+    #     return JSONResponse(
+    #         content={
+    #             "success": True,
+    #             "message": f"Successfully received {num_images} images via raw JSON",
+    #             "count": num_images
+    #         },
+    #         status_code=200
+    #     )
+    # except Exception as e:
+    #     raise HTTPException(status_code=500, detail=str(e))
 
 # Run the server if this script is executed directly
 if __name__ == "__main__":
