@@ -9,6 +9,7 @@ import './index.css'
 
 import WebcamPage from './pages/WebcamPage';
 import ReviewPage from './pages/ReviewPage';
+import ResultPage from './pages/ResultPage';
 
 const router = createBrowserRouter([
   {
