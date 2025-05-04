@@ -29,8 +29,8 @@ app.add_middleware(
 
 llama_processor = LlamaProcessor()
 
-UPLOAD_DIR = "uploaded_videos"
-os.makedirs(UPLOAD_DIR, exist_ok=True) # Create the directory if it doesn't exist
+UPLOAD_DIR = Path("uploaded_videos")
+UPLOAD_DIR.mkdir(exist_ok=True)
 
 def process_video_file(video_path: Path, frame_interval: int = 10) -> List[str]:
     base64_frames: List[str] = []
@@ -100,7 +100,7 @@ async def ask_llama_upload(video: UploadFile = File(...)):
     file_id = str(uuid.uuid4())
     file_ext = Path(original_filename).suffix or '.webm'
     save_filename = f"{file_id}{file_ext}"
-    file_location = f"{UPLOAD_DIR}/{save_filename}"
+    file_location = UPLOAD_DIR / save_filename
 
     try:
         print(f"Receiving file: {original_filename}, Content-Type: {video.content_type}")
@@ -126,7 +126,8 @@ async def ask_llama_upload(video: UploadFile = File(...)):
         traceback.print_exc()
         # Clean up partially saved file if error occurred during save
         if file_location.exists():
-             try: file_location.unlink()
+             try:
+                 file_location.unlink()
              except OSError: pass
         raise HTTPException(status_code=500, detail=f"Failed to save upload: {str(e)}")
     finally:
@@ -140,8 +141,8 @@ async def stream_results(
     video_path: Optional[Path] = None
     for item in UPLOAD_DIR.iterdir():
         if item.is_file() and item.stem == file_id:
-             video_path = item
-             break
+            video_path = item
+            break
 
     if not video_path or not video_path.exists():
         print(f"!!! Error: Could not find video file for ID {file_id} in {UPLOAD_DIR}")
